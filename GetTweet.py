@@ -1,3 +1,11 @@
+'''
+Problems to deal with:
+-------------------------------
+> redundant comments
+> remove tweet without location
+> implement for hub/store
+
+'''
 import tweepy
 import re
 class Twitter():
@@ -59,7 +67,7 @@ class Twitter():
             # print error (if any)
             print("Error : " + str(e))
 def main():
-    # creating object of TwitterClient Class
+    # creating object of Twitter Class
     twitterObject = Twitter()
     # calling function to get tweets
     topic = "amazon locker"
@@ -70,3 +78,4 @@ def main():
 if __name__ == "__main__":
     # calling main function
     main()
+

@@ -1,9 +1,14 @@
 '''
-Problems to deal with:
+- Changes :
+-At line - 66
+  Replaced searchItem variable with a list.
+  
+- At line - 56
+  Language is also passed as parameter for english tweets only.
+
+  Problems to deal with:
 -------------------------------
-- At line - 66
-  searchItem with values 'amazon locker', 'amazonlockers', 'amazon lockers' 
-        respectively gives different answers
+
 - At line - 72
     Its possible that the location is a city in USA but this code will only consider the location string containing 'USA'
         which is not correct.
@@ -44,14 +49,16 @@ class Twitter():
                 request('search/tweets', {'q': query}) this can also be used
 
         '''
-        tweetList = []
+        tweetList = [] 
+        fetchedTweets = []
+        
         try:
             for item in query:
                 fetchedTweets = self.apiObject.search(q = item, lang = language)
             # parsing tweets one by one
-            for tweet in fetchedTweets:
+                for tweet in fetchedTweets:
                 # empty dictionary to store required params of a tweet
-                parsedTweet = {}
+                    parsedTweet = {}
                 # saving clean text and location of tweet in the form of dictionary into Tweet list
                 parsedTweet['text'] = self.cleanTweet(tweet.text)
                 parsedTweet['location'] = tweet.user.location
@@ -78,8 +85,6 @@ def main():
         print (j['text'],'\n',j['location'],"\n\n")
             #if 'USA' in i['location']:
             #    print (i['text'],'\n',i['location'],"\n\n")
-        
 if __name__ == "__main__":
     # calling main function
     main()
-

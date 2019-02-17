@@ -1,9 +1,11 @@
 '''
-Problems to deal with:
+- Changes :
+-At line - 66
+  Replaced searchItem variable with a list.
+
+  Problems to deal with:
 -------------------------------
-- At line - 66
-  searchItem with values 'amazon locker', 'amazonlockers', 'amazon lockers' 
-        respectively gives different answers
+
 - At line - 72
     Its possible that the location is a city in USA but this code will only consider the location string containing 'USA'
         which is not correct.
@@ -44,13 +46,16 @@ class Twitter():
                 request('search/tweets', {'q': query}) thiscan also be used
 
         '''
-        tweetList = []
+        tweetList = [] 
+        fetchedTweets = []
+        
         try:
-            fetchedTweets = self.apiObject.search(q = query)
+            for i in query:
+                fetchedTweets += self.apiObject.search(q = i)
             # parsing tweets one by one
-            for tweet in fetchedTweets:
+                for tweet in fetchedTweets:
                 # empty dictionary to store required params of a tweet
-                parsedTweet = {}
+                    parsedTweet = {}
                 # saving clean text and location of tweet in the form of dictionary into Tweet list
                 parsedTweet['text'] = self.cleanTweet(tweet.text)
                 parsedTweet['location'] = tweet.user.location
@@ -68,14 +73,13 @@ class Twitter():
 def main():
     # creating object of Twitter Class and class class members to get tweets
     twitterObject = Twitter()
-    searchItem = "amazon locker"
+    searchItem = ["amazonlocker","amazonlockers","amazon lockers"]
     tweets = twitterObject.getTweets(query = searchItem)
     for i in tweets:
         #print the tweets from USA
-        if 'USA' in i['location']:
+        #if 'USA' in i['location']:
             print (i['text'],'\n',i['location'],"\n\n")
 
 if __name__ == "__main__":
     # calling main function
     main()
-

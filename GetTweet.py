@@ -62,7 +62,6 @@ class Twitter():
                 # saving clean text and location of tweet in the form of dictionary into Tweet list
                 parsedTweet['text'] = self.cleanTweet(tweet.text)
                 parsedTweet['location'] = tweet.user.location
-                print(tweet.retweet_count)
                 if tweet.retweet_count > 0:
                     # if tweet has retweets, ensure that it is appended only once
                     if parsedTweet not in tweetList:

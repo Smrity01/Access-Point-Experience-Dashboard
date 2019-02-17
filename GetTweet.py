@@ -2,6 +2,9 @@
 - Changes :
 -At line - 66
   Replaced searchItem variable with a list.
+  
+- At line - 56
+  Language is also passed as parameter for english tweets only.
 
   Problems to deal with:
 -------------------------------
@@ -39,19 +42,19 @@ class Twitter():
         '''
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split())
 
-    def getTweets(self, query):
+    def getTweets(self, query, language = 'eu'):
         '''
         ------Main function to fetch tweets and parse them-------
         -  Call twitter api to fetch tweets using search function refer README for details.
-                request('search/tweets', {'q': query}) thiscan also be used
+                request('search/tweets', {'q': query}) this can also be used
 
         '''
         tweetList = [] 
         fetchedTweets = []
         
         try:
-            for i in query:
-                fetchedTweets += self.apiObject.search(q = i)
+            for item in query:
+                fetchedTweets = self.apiObject.search(q = item, lang = language)
             # parsing tweets one by one
                 for tweet in fetchedTweets:
                 # empty dictionary to store required params of a tweet
@@ -59,6 +62,7 @@ class Twitter():
                 # saving clean text and location of tweet in the form of dictionary into Tweet list
                 parsedTweet['text'] = self.cleanTweet(tweet.text)
                 parsedTweet['location'] = tweet.user.location
+                print(tweet.retweet_count)
                 if tweet.retweet_count > 0:
                     # if tweet has retweets, ensure that it is appended only once
                     if parsedTweet not in tweetList:
@@ -73,13 +77,14 @@ class Twitter():
 def main():
     # creating object of Twitter Class and class class members to get tweets
     twitterObject = Twitter()
-    searchItem = ["amazonlocker","amazonlockers","amazon lockers"]
-    tweets = twitterObject.getTweets(query = searchItem)
-    for i in tweets:
+    searchItem = ["amazonlockers","amazonlocker","amazon locker","amazon lockers","#amazonlocker","#amazonlockers"]
+    tweets = twitterObject.getTweets(query = searchItem, language = 'en')
+    #print(tweets)
+    for j in tweets:
         #print the tweets from USA
-        #if 'USA' in i['location']:
-            print (i['text'],'\n',i['location'],"\n\n")
-
+        print (j['text'],'\n',j['location'],"\n\n")
+            #if 'USA' in i['location']:
+            #    print (i['text'],'\n',i['location'],"\n\n")
 if __name__ == "__main__":
     # calling main function
     main()

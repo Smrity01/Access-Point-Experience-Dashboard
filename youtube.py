@@ -72,7 +72,7 @@ class Youtube():
 			hi.append(self.youtube.channels().list(part = 'snippet',forUsername=comment[0]).execute())
 			print(comment[0],'\n',comment[1])
 		for i in hi:
-			print(i,'\n\n')
+			print(i['items'][0]['snippet']['country'],'\n\n')
 '''
 print (yObject.youtube.channels().list(part = 'snippet',forUsername='kentuckyrangerpro').execute())
 #print(comments)

@@ -6,7 +6,7 @@
 
 '''
 Problems- 
-- Works for a single video id at a time
+- Works for a multiple video id at a time and retrieve replies of comments.
 
 '''
 from apiclient.discovery import build

@@ -77,11 +77,11 @@ class Youtube():
     	comments = []
         #get comments on each video
         try:
-        	for videoId in videoIds:
-        		comments = self.getVideoData(videoId)
+            for videoId in videoIds:
+                comments = self.getVideoData(videoId)
         	return comments
         except IndexError:
-        	return None
+            return None
 
     def getSentimentScores(self , sentence): 
     	sidObj = SentimentIntensityAnalyzer() 
@@ -91,75 +91,6 @@ class Youtube():
     def getReplies(self, parentId):
         response = self.youtube.comments().list(part = 'snippet', parentId = parentId, textFormat="plainText").execute()
         return  response
-
-    '''
-    def getReplies(self, parentId):
-        response = self.youtube.comments().list(part = 'snippet', parentId = parentId, textFormat="plainText").execute()
-        for item in response["items"]:
-            author = item["snippet"]["authorDisplayName"]
-            text = item["snippet"]["textDisplay"]
-            i = self.youtube.channels().list(part = 'snippet',forUsername=author).execute()
-            if len(i['items']) > 0:
-                    if('country' in i['items'][0]['snippet']):
-                        row = []
-                        polarity = self.getSentimentScores(text.encode('unicode-escape').decode('utf-8'))
-                        #print(polarity['compound'])
-                        row.append(text.encode('unicode-escape').decode('utf-8'))
-                        row.append(i['items'][0]['snippet']['country'])
-                        row.append(author.encode('unicode-escape').decode('utf-8'))
-                        row.append(polarity['compound'])
-                        row.append(polarity['neg']*100)
-                        row.append(polarity['neu']*100)
-                        row.append(polarity['pos']*100)
-                        writer1.writerows([row])
-                    else:
-                        row = []
-                        polarity = self.getSentimentScores(text.encode('unicode-escape').decode('utf-8'))
-                        row.append(text.encode('unicode-escape').decode('utf-8'))
-                        row.append(" ")
-                        row.append(author.encode('unicode-escape').decode('utf-8'))
-                        row.append(polarity['compound'])
-                        row.append(polarity['neg']*100)
-                        row.append(polarity['neu']*100)
-                        row.append(polarity['pos']*100)
-                        writer2.writerows([row])
-    '''
-    '''
-        if('country' in item['snippet']):
-            print(" ")
-            #print(item['snippet']['country'],'\n\n')
-    '''
-
-    '''
-    def getUserData(self, comment):
-        i = self.youtube.channels().list(part = 'snippet',forUsername=comment[0]).execute()
-        if len(i['items']) > 0:
-            if('country' in i['items'][0]['snippet']):
-                row = []
-                polarity = self.getSentimentScores(comment[1].encode('unicode-escape').decode('utf-8'))
-                #print(polarity['compound'])
-                row.append(comment[1].encode('unicode-escape').decode('utf-8'))
-                row.append(i['items'][0]['snippet']['country'])
-                row.append(comment[0].encode('unicode-escape').decode('utf-8'))
-                row.append(polarity['compound'])
-                row.append(polarity['neg']*100)
-                row.append(polarity['neu']*100)
-                row.append(polarity['pos']*100)
-                writer1.writerows([row])
-            else:
-                row = []
-                polarity = self.getSentimentScores(comment[1].encode('unicode-escape').decode('utf-8'))
-                row.append(comment[0].encode('unicode-escape').decode('utf-8'))
-                row.append(" ")
-                row.append(comment[1].encode('unicode-escape').decode('utf-8'))
-                row.append(polarity['compound'])
-                row.append(polarity['neg']*100)
-                row.append(polarity['neu']*100)
-                row.append(polarity['pos']*100)
-                writer2.writerows([row])
-        self.getReplies(comment[2])
-    '''
-
 
     def writeRow(self, reviewData, flag):
 
@@ -191,7 +122,6 @@ class Youtube():
             row.append(polarity['pos']*100)            
             self.writeToCSV(row)
 
-
     def writeToCSV(self, row):
         fd1 = open("review.csv", "w", newline='')
         writer1 = csv.writer(fd1, delimiter=',')
@@ -205,8 +135,9 @@ class Youtube():
 
 
 def main():
-    videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]
+    # creating object of Youtube Class
     yObject = Youtube()
+    videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]
     #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
     #writer2.writerows([row])
     

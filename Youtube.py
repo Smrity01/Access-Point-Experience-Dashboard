@@ -140,10 +140,9 @@ class Youtube():
                     writer2 = csv.writer(fd2, delimiter=',')
                     writer2.writerows([row])
                 finally:
-                    fd1.close()
+                    fd2.close()
             except IOError:
                 return None
-
 
 
 def main():

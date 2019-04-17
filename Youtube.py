@@ -123,15 +123,27 @@ class Youtube():
             self.writeToCSV(row)
 
     def writeToCSV(self, row):
-        fd1 = open("review.csv", "w", newline='')
-        writer1 = csv.writer(fd1, delimiter=',')
-        fd2 =  open("output.csv", "w", newline='')
-        writer2 = csv.writer(fd2, delimiter=',')
-
         if(row[1] != " "):
-            writer1.writerows([row])
+            try: 
+                fd1 = open("review.csv", "w", newline='')
+                try:
+                    writer1 = csv.writer(fd1, delimiter=',')
+                    writer1.writerows([row])
+                finally:
+                    fd1.close()
+            except IOError:
+                return None
         else:
-            writer2.writerows([row])
+            try:
+                fd2 =  open("output.csv", "w", newline='')
+                try:
+                    writer2 = csv.writer(fd2, delimiter=',')
+                    writer2.writerows([row])
+                finally:
+                    fd1.close()
+            except IOError:
+                return None
+
 
 
 def main():

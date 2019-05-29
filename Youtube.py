@@ -6,11 +6,6 @@ import csv
 import sys
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-
-#f = open("review.csv", "w", newline='')
-#writer1 = csv.writer(f,delimiter=',')
-#f2 =  open("output.csv", "w", newline='')
-#writer2 = csv.writer(f2,delimiter=',')
                                                 
 #import sys
 #from importlib import reload
@@ -78,7 +73,9 @@ class Youtube():
         #get comments on each video
         try:
             for videoId in videoIds:
-                comments = self.getVideoData(videoId)
+                comment = []
+                comment = self.getVideoData(videoId)
+                comments.extend(comment)
         	return comments
         except IndexError:
             return None
@@ -125,7 +122,7 @@ class Youtube():
     def writeToCSV(self, row):
         if(row[1] != " "):
             try: 
-                fd1 = open("review.csv", "w", newline='')
+                fd1 = open("review.csv", "a", newline='')
                 try:
                     writer1 = csv.writer(fd1, delimiter=',')
                     writer1.writerows([row])
@@ -135,7 +132,7 @@ class Youtube():
                 return None
         else:
             try:
-                fd2 =  open("output.csv", "w", newline='')
+                fd2 =  open("output.csv", "a", newline='')
                 try:
                     writer2 = csv.writer(fd2, delimiter=',')
                     writer2.writerows([row])

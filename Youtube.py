@@ -7,6 +7,7 @@ import sys
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from datetime import datetime
 
+                                                
 #import sys
 #from importlib import reload
 #sys.setdefaultencoding('utf8') 
@@ -32,23 +33,34 @@ class Youtube():
     def sortCSV(self, fileName):
         fd1 = open(fileName, "r")
         data = csv.reader(fd1, delimiter=',')
-        print(data)
-        #sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%d-%b-%y"),reverse=True)
         sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d"),reverse=True)
         #print(sortedData)
         fd1.close()
         return sortedData
     
-    def initlastUpdatedDate(self, fileName):
+    def initLastUpdatedDate(self, fileName):
+        global lastUpdatedDate
         sortedData = self.sortCSV(fileName)
         firstRow = sortedData[0]
         lastUpdatedDate = firstRow[7]
-        print(lastUpdatedDate)
+        #print(lastUpdatedDate)
     
-    def setlastUpdatedDate(self, newDate):
+    def setLastUpdatedDate(self, newDate):
+        global lastUpdatedDate
         lastUpdatedDate = newDate
         
-    #def isAddedInCSV(self, row):
+    def getLastUpdatedDate(self):
+        global lastUpdatedDate
+        return lastUpdatedDate
+        
+    def isAddedInCSV(self, row):
+        global lastUpdatedDate
+        newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d")
+        newDate2 = datetime.strptime(row[7], "%Y-%m-%d")
+        if newDate1 < newDate2:
+            return False
+        else:
+            return True
 
     def getVideoData(self, videoId):
         url = "https://www.youtube.com/watch?v=" + videoId
@@ -159,20 +171,25 @@ class Youtube():
 
     def writeToCSV(self, row):
         if(row[1] != " "):
-            #adding date time check logic
-                    
-            try: 
-                fd1 = open("review.csv", "a", newline='')
-                try:
-                    writer1 = csv.writer(fd1, delimiter=',')
-                    writer1.writerows([row])
-                finally:
-                    fd1.close()
-            except IOError:
+            #added date time check logic
+            print(self.isAddedInCSV(row))
+            print('\n')
+            if(self.isAddedInCSV(row)): 
                 return None
+            else:
+                try: 
+                    fd1 = open("review.csv", "a", newline='')
+                    try:
+                        writer1 = csv.writer(fd1, delimiter=',')
+                        writer1.writerows([row])
+                        #update the variable with date of newly added row
+                        self.setLastUpdatedDate(row[7])
+                    finally:
+                        fd1.close()
+                except IOError:
+                    return None
         else:
-            #adding date time check logic
-                    
+            #to be added date time check logic     
             try:
                 fd2 =  open("output.csv", "a", newline='')
                 try:
@@ -189,7 +206,10 @@ def main():
     videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]
     #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
     #writer2.writerows([row])
-    
+    yObject.initLastUpdatedDate("review.csv")
+    #print("\n lastUpdatedDate: ")
+    #global lastUpdatedDate
+    #print(lastUpdatedDate)
     comments = yObject.getComments(videoIds)
     for comment in comments:
         yObject.writeRow(comment, 0)
@@ -200,9 +220,5 @@ def main():
 
 if __name__ == "__main__":
     # calling main function
-    #main()
-
-yObject = Youtube()
-print(yObject.sortCSV("review.csv"))
-#yObject.initlastUpdatedDate("review.csv")
+    main()
 

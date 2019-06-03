@@ -28,7 +28,8 @@ class Youtube():
         '''
         Format of date time is %YYYY-%MM-%DD %hh:%mm:%ss
         '''
-        formattedDateTime = dateTimeList[0] + ' ' + formattedTime 
+        formattedDateTime = ""
+        formattedDateTime = ''.join(dateTimeList[0]) + ' ' + ''.join(formattedTime[0])
         return formattedDateTime
     def sortCSV(self, fileName):
         fd1 = open(fileName, "r")

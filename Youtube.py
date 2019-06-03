@@ -31,10 +31,11 @@ class Youtube():
         formattedDateTime = ""
         formattedDateTime = ''.join(dateTimeList[0]) + ' ' + ''.join(formattedTime[0])
         return formattedDateTime
+    
     def sortCSV(self, fileName):
         fd1 = open(fileName, "r")
         data = csv.reader(fd1, delimiter=',')
-        sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d"),reverse=True)
+        sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S"),reverse=True)
         #print(sortedData)
         fd1.close()
         return sortedData
@@ -56,8 +57,8 @@ class Youtube():
         
     def isAddedInCSV(self, row):
         global lastUpdatedDate
-        newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d")
-        newDate2 = datetime.strptime(row[7], "%Y-%m-%d")
+        newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
+        newDate2 = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
         if newDate1 < newDate2:
             return False
         else:
@@ -171,8 +172,8 @@ class Youtube():
     def writeToCSV(self, row):
         if(row[1] != " "):
             #added date time check logic
-            print(self.isAddedInCSV(row))
-            print('\n')
+            #print(self.isAddedInCSV(row))
+            #print('\n')
             if(self.isAddedInCSV(row)): 
                 return None
             else:
@@ -206,9 +207,7 @@ def main():
     #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
     #writer2.writerows([row])
     yObject.initLastUpdatedDate("review.csv")
-    #print("\n lastUpdatedDate: ")
-    #global lastUpdatedDate
-    #print(lastUpdatedDate)
+    
     comments = yObject.getComments(videoIds)
     for comment in comments:
         yObject.writeRow(comment, 0)

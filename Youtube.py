@@ -5,26 +5,55 @@ import pafy
 import csv
 import sys
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from datetime import datetime
 
-                                                
 #import sys
 #from importlib import reload
 #sys.setdefaultencoding('utf8') 
 
+lastUpdatedDate = ""
 
 class Youtube():
     
     def __init__(self):
-    	developerKey = "AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs"
+        developerKey = "AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs"
         youtubeApiServiceName = "youtube"
         youtubeApiVersion = "v3"
         pafy.set_api_key("AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs")
         self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
+    def getFormatDate(self, dateTime):
+        dateTimeList = dateTime.split('T')
+        return dateTimeList[0]
+    def getFormatTime(self, dateTime):
+        dateTimeList = dateTime.split('T')
+        formattedTime = dateTimeList[1].split('.')
+        return formattedTime[0]
+    
+    def sortCSV(self, fileName):
+        fd1 = open(fileName, "r")
+        data = csv.reader(fd1, delimiter=',')
+        print(data)
+        #sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%d-%b-%y"),reverse=True)
+        sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d"),reverse=True)
+        #print(sortedData)
+        fd1.close()
+        return sortedData
+    
+    def initlastUpdatedDate(self, fileName):
+        sortedData = self.sortCSV(fileName)
+        firstRow = sortedData[0]
+        lastUpdatedDate = firstRow[7]
+        print(lastUpdatedDate)
+    
+    def setlastUpdatedDate(self, newDate):
+        lastUpdatedDate = newDate
+        
+    #def isAddedInCSV(self, row):
 
     def getVideoData(self, videoId):
-    	url = "https://www.youtube.com/watch?v=" + videoId
+        url = "https://www.youtube.com/watch?v=" + videoId
         #Request for Metadata of the Video
-        videoData = pafy.new(url)
+        #videoData = pafy.new(url)
         #Request for Comments
         results = self.youtube.commentThreads().list(
             part="snippet",
@@ -42,7 +71,6 @@ class Youtube():
         while further:
             halt = False
             if first == False:
-                print (".")
                 try:
                     results = self.youtube.commentThreads().list(part = "snippet", maxResults = 100, videoId = videoId, textFormat = "plainText", pageToken = nextPageToken).execute()
                     totalResults = int(results["pageInfo"]["totalResults"])
@@ -55,7 +83,9 @@ class Youtube():
                     author = comment["snippet"]["authorDisplayName"]
                     text = comment["snippet"]["textDisplay"]
                     idi = item['snippet']['topLevelComment']['id']
-                    comments.append([author,text,idi])
+                    publishedAt = item['snippet']['topLevelComment']['snippet']['publishedAt']
+                    updatedAt = item['snippet']['topLevelComment']['snippet']['updatedAt']
+                    comments.append([author, text, idi, publishedAt, updatedAt])
             if totalResults < 100:
                 further = False
                 first = False
@@ -69,19 +99,19 @@ class Youtube():
         return comments
 
     def getComments(self, videoIds):
-    	comments = []
+        comments = []
         #get comments on each video
         try:
             for videoId in videoIds:
                 comment = []
                 comment = self.getVideoData(videoId)
                 comments.extend(comment)
-        	return comments
+            return comments
         except IndexError:
             return None
 
-    def getSentimentScores(self , sentence): 
-    	sidObj = SentimentIntensityAnalyzer() 
+    def getSentimentScores(self , sentence):
+        sidObj = SentimentIntensityAnalyzer()
         sentimentDictionary = sidObj.polarity_scores(sentence)
         return sentimentDictionary
 
@@ -95,12 +125,14 @@ class Youtube():
             #for comment
             author = reviewData[0]
             text = reviewData[1]
+            publishedAt = reviewData[3]
+            updatedAt = reviewData[4]
         if flag == 1:
             #for reply
             author = reviewData["snippet"]["authorDisplayName"]
             text = reviewData["snippet"]["textDisplay"]
-        
-
+            publishedAt = reviewData['snippet']['publishedAt']
+            updatedAt = reviewData['snippet']['updatedAt']        
         i = self.youtube.channels().list(part = 'snippet',forUsername=author).execute()
         if len(i['items']) > 0:
             row = []
@@ -116,11 +148,19 @@ class Youtube():
             row.append(polarity['compound'])
             row.append(polarity['neg']*100)
             row.append(polarity['neu']*100)
-            row.append(polarity['pos']*100)            
+            row.append(polarity['pos']*100)
+            #PUBLISHED DATE & TIME
+            row.append(self.getFormatDate(publishedAt))
+            row.append(self.getFormatTime(publishedAt))   
+            #UPDATED DATE & TIME
+            row.append(self.getFormatDate(updatedAt))
+            row.append(self.getFormatTime(updatedAt))   
             self.writeToCSV(row)
 
     def writeToCSV(self, row):
         if(row[1] != " "):
+            #adding date time check logic
+                    
             try: 
                 fd1 = open("review.csv", "a", newline='')
                 try:
@@ -131,6 +171,8 @@ class Youtube():
             except IOError:
                 return None
         else:
+            #adding date time check logic
+                    
             try:
                 fd2 =  open("output.csv", "a", newline='')
                 try:
@@ -140,7 +182,6 @@ class Youtube():
                     fd2.close()
             except IOError:
                 return None
-
 
 def main():
     # creating object of Youtube Class
@@ -154,9 +195,14 @@ def main():
         yObject.writeRow(comment, 0)
         replies = yObject.getReplies(comment[2])
         for reply in replies["items"]:
+            #print(reply)
             yObject.writeRow(reply, 1)
-
 
 if __name__ == "__main__":
     # calling main function
-    main()
+    #main()
+
+yObject = Youtube()
+print(yObject.sortCSV("review.csv"))
+#yObject.initlastUpdatedDate("review.csv")
+

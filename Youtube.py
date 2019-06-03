@@ -22,14 +22,14 @@ class Youtube():
         youtubeApiVersion = "v3"
         pafy.set_api_key("AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs")
         self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
-    def getFormatDate(self, dateTime):
-        dateTimeList = dateTime.split('T')
-        return dateTimeList[0]
-    def getFormatTime(self, dateTime):
+    def getFormatDateTime(self, dateTime):
         dateTimeList = dateTime.split('T')
         formattedTime = dateTimeList[1].split('.')
-        return formattedTime[0]
-    
+        '''
+        Format of date time is %YYYY-%MM-%DD %hh:%mm:%ss
+        '''
+        formattedDateTime = dateTimeList[0] + ' ' + formattedTime 
+        return formattedDateTime
     def sortCSV(self, fileName):
         fd1 = open(fileName, "r")
         data = csv.reader(fd1, delimiter=',')
@@ -162,11 +162,9 @@ class Youtube():
             row.append(polarity['neu']*100)
             row.append(polarity['pos']*100)
             #PUBLISHED DATE & TIME
-            row.append(self.getFormatDate(publishedAt))
-            row.append(self.getFormatTime(publishedAt))   
+            row.append(self.getFormatDateTime(publishedAt))   
             #UPDATED DATE & TIME
-            row.append(self.getFormatDate(updatedAt))
-            row.append(self.getFormatTime(updatedAt))   
+            row.append(self.getFormatDateTime(updatedAt))   
             self.writeToCSV(row)
 
     def writeToCSV(self, row):

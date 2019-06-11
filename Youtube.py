@@ -17,22 +17,34 @@ lastUpdatedDate = ""
 class Youtube():
     
     def __init__(self):
+    	'''
+        Objective: initialize youtube API developer key, service name and version
+        '''
         developerKey = "AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs"
         youtubeApiServiceName = "youtube"
         youtubeApiVersion = "v3"
         pafy.set_api_key("AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs")
         self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
+
     def getFormatDateTime(self, dateTime):
+        '''
+        Objective: convert dateTime in format %YYYY-%MM-%DD %hh:%mm:%ss
+        Input Parameter: dateTime - original dateTime in comment/reply data
+        Return: formatted date-time
+        '''
         dateTimeList = dateTime.split('T')
         formattedTime = dateTimeList[1].split('.')
-        '''
-        Format of date time is %YYYY-%MM-%DD %hh:%mm:%ss
-        '''
         formattedDateTime = ""
         formattedDateTime = ''.join(dateTimeList[0]) + ' ' + ''.join(formattedTime[0])
         return formattedDateTime
     
     def sortCSV(self, fileName):
+    	'''
+        Objective: Sort CSV file data in reverse order on date-time column 
+        			date time format is %Y-%m-%d %H:%M:%S
+        Input Parameter: fileName - file to be sorted
+        Return: sorted data
+        '''
         fd1 = open(fileName, "r")
         data = csv.reader(fd1, delimiter=',')
         sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S"),reverse=True)
@@ -41,6 +53,10 @@ class Youtube():
         return sortedData
     
     def initLastUpdatedDate(self, fileName):
+    	'''
+        Objective: initialize date-time with most recent date-time in file
+        Input Parameter: fileName - csv file
+        '''
         global lastUpdatedDate
         sortedData = self.sortCSV(fileName)
         firstRow = sortedData[0]
@@ -48,14 +64,27 @@ class Youtube():
         #print(lastUpdatedDate)
     
     def setLastUpdatedDate(self, newDate):
+    	'''
+        Objective: set last updated comment/reply date-time
+        Input Parameter: newDate - new date-time
+        '''
         global lastUpdatedDate
         lastUpdatedDate = newDate
         
     def getLastUpdatedDate(self):
+    	'''
+        Objective: return last updated comment/reply date-time
+        '''
         global lastUpdatedDate
         return lastUpdatedDate
         
     def isAddedInCSV(self, row):
+    	'''
+        Objective: Check if comment/reply row is already added in csv file
+        Input Parameter: row - contains comment/reply with related information
+        Return: False if date in row is greater than last updated date-time
+        		otherwise, True 
+        '''
         global lastUpdatedDate
         newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
         newDate2 = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
@@ -65,6 +94,11 @@ class Youtube():
             return True
 
     def getVideoData(self, videoId):
+    	'''
+        Objective: Fetch comment threads on a youtube video
+        Input Parameter: videoID - Unique Id of video
+        Return: required fields of fetched comments data
+        '''
         url = "https://www.youtube.com/watch?v=" + videoId
         #Request for Metadata of the Video
         #videoData = pafy.new(url)
@@ -113,6 +147,11 @@ class Youtube():
         return comments
 
     def getComments(self, videoIds):
+    	'''
+        Objective: Fetch all comments on multiple youtube videos
+        Input Parameter: videoIDs - list of Unique Id of videos
+        Return: fetched comments data
+        '''
         comments = []
         #get comments on each video
         try:
@@ -125,15 +164,32 @@ class Youtube():
             return None
 
     def getSentimentScores(self , sentence):
+    	'''
+        Objective: Find polarity of sentence
+        Input Parameter: sentence - text on video (comment/reply)
+        Return: polarity scores
+        '''
         sidObj = SentimentIntensityAnalyzer()
         sentimentDictionary = sidObj.polarity_scores(sentence)
         return sentimentDictionary
 
     def getReplies(self, parentId):
+    	'''
+        Objective: Fetch all replies on a comment on a youtube video
+        Input Parameter: parentID - Id for comment
+        Return: fetched replies in any
+        '''
         response = self.youtube.comments().list(part = 'snippet', parentId = parentId, textFormat="plainText").execute()
         return  response
 
     def writeRow(self, reviewData, flag):
+    	'''
+        Objective: create list by appending required attributes from reviewData,
+        			call writeToCSV to update file
+        Input Parameters:   reviewData - comment/reply data
+        				    flag -  0 -> reviewData contains comment data
+        				 			1 -> reviewData contains reply data
+        '''
 
         if flag == 0:
             #for comment
@@ -170,6 +226,10 @@ class Youtube():
             self.writeToCSV(row)
 
     def writeToCSV(self, row):
+    	'''
+        Objective: write data in csv file after checking if it is not already added
+		Input Parameter: row - list containing data to be inserted
+        '''
         if(row[1] != " "):
             #added date time check logic
             #print(self.isAddedInCSV(row))

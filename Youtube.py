@@ -17,8 +17,10 @@ lastUpdatedDate = ""
 class Youtube():
     
     def __init__(self):
-    	'''
-        Objective: initialize youtube API developer key, service name and version
+        '''
+        Objective       : Initialize youtube API developer key, service name and version
+        Input Parameter : -
+        Return          : -
         '''
         developerKey = "AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs"
         youtubeApiServiceName = "youtube"
@@ -28,9 +30,9 @@ class Youtube():
 
     def getFormatDateTime(self, dateTime):
         '''
-        Objective: convert dateTime in format %YYYY-%MM-%DD %hh:%mm:%ss
-        Input Parameter: dateTime - original dateTime in comment/reply data
-        Return: formatted date-time
+        Objective       : Convert dateTime in format %YYYY-%MM-%DD %hh:%mm:%ss
+        Input Parameter : DateTime - original dateTime in comment/reply data
+        Return          : Formatted date-time
         '''
         dateTimeList = dateTime.split('T')
         formattedTime = dateTimeList[1].split('.')
@@ -39,11 +41,11 @@ class Youtube():
         return formattedDateTime
     
     def sortCSV(self, fileName):
-    	'''
-        Objective: Sort CSV file data in reverse order on date-time column 
-        			date time format is %Y-%m-%d %H:%M:%S
-        Input Parameter: fileName - file to be sorted
-        Return: sorted data
+        '''
+        Objective       : Sort CSV file data in reverse order on date-time column 
+                            date time format is %Y-%m-%d %H:%M:%S
+        Input Parameter : FileName - file to be sorted
+        Return          : Sorted data
         '''
         fd1 = open(fileName, "r")
         data = csv.reader(fd1, delimiter=',')
@@ -53,9 +55,10 @@ class Youtube():
         return sortedData
     
     def initLastUpdatedDate(self, fileName):
-    	'''
-        Objective: initialize date-time with most recent date-time in file
-        Input Parameter: fileName - csv file
+        '''
+        Objective       : Initialize date-time with most recent date-time in file
+        Input Parameter : FileName - csv file
+        Return          : -
         '''
         global lastUpdatedDate
         sortedData = self.sortCSV(fileName)
@@ -64,26 +67,29 @@ class Youtube():
         #print(lastUpdatedDate)
     
     def setLastUpdatedDate(self, newDate):
-    	'''
-        Objective: set last updated comment/reply date-time
-        Input Parameter: newDate - new date-time
+        '''
+        Objective       : set last updated comment/reply date-time
+        Input Parameter : newDate - new date-time
+        Return          : -
         '''
         global lastUpdatedDate
         lastUpdatedDate = newDate
         
     def getLastUpdatedDate(self):
-    	'''
-        Objective: return last updated comment/reply date-time
+        '''
+        Objective       : Return (Gobal variable) last updated comment/reply date-time
+        Input Parameter : -
+        Return          : Last updated Date 
         '''
         global lastUpdatedDate
         return lastUpdatedDate
         
     def isAddedInCSV(self, row):
-    	'''
-        Objective: Check if comment/reply row is already added in csv file
-        Input Parameter: row - contains comment/reply with related information
-        Return: False if date in row is greater than last updated date-time
-        		otherwise, True 
+        '''
+        Objective       : Check if comment/reply row is already added in csv file
+        Input Parameter : Row - contains comment/reply with related information
+        Return          : False if date in row is greater than last updated date-time
+        		            otherwise, True 
         '''
         global lastUpdatedDate
         newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
@@ -94,10 +100,10 @@ class Youtube():
             return True
 
     def getVideoData(self, videoId):
-    	'''
-        Objective: Fetch comment threads on a youtube video
-        Input Parameter: videoID - Unique Id of video
-        Return: required fields of fetched comments data
+        '''
+        Objective       : Fetch comment threads on a youtube video
+        Input Parameter : VideoID - Unique Id of video
+        Return          : Required fields of fetched comments data
         '''
         url = "https://www.youtube.com/watch?v=" + videoId
         #Request for Metadata of the Video
@@ -147,10 +153,10 @@ class Youtube():
         return comments
 
     def getComments(self, videoIds):
-    	'''
-        Objective: Fetch all comments on multiple youtube videos
-        Input Parameter: videoIDs - list of Unique Id of videos
-        Return: fetched comments data
+        '''
+        Objective       : Fetch all comments on multiple youtube videos
+        Input Parameter : videoIDs - list of Unique Id of videos
+        Return          : fetched comments data
         '''
         comments = []
         #get comments on each video
@@ -164,31 +170,32 @@ class Youtube():
             return None
 
     def getSentimentScores(self , sentence):
-    	'''
-        Objective: Find polarity of sentence
-        Input Parameter: sentence - text on video (comment/reply)
-        Return: polarity scores
+        '''
+        Objective       : Find polarity of sentence
+        Input Parameter : sentence - text on video (comment/reply)
+        Return          : Polarity scores
         '''
         sidObj = SentimentIntensityAnalyzer()
         sentimentDictionary = sidObj.polarity_scores(sentence)
         return sentimentDictionary
 
     def getReplies(self, parentId):
-    	'''
-        Objective: Fetch all replies on a comment on a youtube video
-        Input Parameter: parentID - Id for comment
-        Return: fetched replies in any
+        '''
+        Objective       : Fetch all replies on a comment on a youtube video
+        Input Parameter : parentID - Id for comment
+        Return          : Fetched replies in any
         '''
         response = self.youtube.comments().list(part = 'snippet', parentId = parentId, textFormat="plainText").execute()
         return  response
 
     def writeRow(self, reviewData, flag):
-    	'''
-        Objective: create list by appending required attributes from reviewData,
-        			call writeToCSV to update file
-        Input Parameters:   reviewData - comment/reply data
+        '''
+        Objective       : create list by appending required attributes from reviewData,
+        			        call writeToCSV to update file
+        Input Parameter :   reviewData - comment/reply data
         				    flag -  0 -> reviewData contains comment data
         				 			1 -> reviewData contains reply data
+        Return          : -
         '''
 
         if flag == 0:
@@ -226,9 +233,10 @@ class Youtube():
             self.writeToCSV(row)
 
     def writeToCSV(self, row):
-    	'''
-        Objective: write data in csv file after checking if it is not already added
-		Input Parameter: row - list containing data to be inserted
+        '''
+        Objective       : Write data in csv file after checking if it is not already added
+		Input Parameter : row - list containing data to be inserted
+        Return          : -
         '''
         if(row[1] != " "):
             #added date time check logic
@@ -261,6 +269,11 @@ class Youtube():
                 return None
 
 def main():
+    '''
+    Objective       : Main function / Driver Function
+	Input Parameter : -
+    Return          : -
+    '''
     # creating object of Youtube Class
     yObject = Youtube()
     videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]

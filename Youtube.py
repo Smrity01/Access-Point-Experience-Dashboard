@@ -12,7 +12,8 @@ from datetime import datetime
 #from importlib import reload
 #sys.setdefaultencoding('utf8') 
 
-lastUpdatedDate = ""
+lastUpdatedDate = "2013-01-26 18:10:11"
+lastUpdatedDateNoCo = "2014-05-28 21:23:07"
 
 class Youtube():
     
@@ -45,23 +46,35 @@ class Youtube():
         Input Parameter: fileName - file to be sorted
         Return: sorted data
         '''
-        fd1 = open(fileName, "r")
-        data = csv.reader(fd1, delimiter=',')
-        sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S"),reverse=True)
-        #print(sortedData)
-        fd1.close()
-        return sortedData
+        try:
+        	fd1 = open(fileName, "r")
+        	data = csv.reader(fd1, delimiter=',')
+        	sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S"),reverse=True)
+        	#print(sortedData)
+        	fd1.close()
+        	return sortedData
+        except IOError:
+            return None
     
-    def initLastUpdatedDate(self, fileName):
+    def initLastUpdatedDate(self, fileName, fileNameNoCo):
     	'''
-        Objective: initialize date-time with most recent date-time in file
-        Input Parameter: fileName - csv file
+        Objective: initialize date-time with most recent date-time in files
+        Input Parameter: fileName - csv file with location
+        				 fileNameNoCo - csv file without location
         '''
-        global lastUpdatedDate
         sortedData = self.sortCSV(fileName)
-        firstRow = sortedData[0]
-        lastUpdatedDate = firstRow[7]
-        #print(lastUpdatedDate)
+        if(sortedData): 
+        	global lastUpdatedDate
+        	firstRow = sortedData[0]
+        	lastUpdatedDate = firstRow[7]
+        	#print(lastUpdatedDate)
+
+        sortedData = self.sortCSV(fileNameNoCo)
+        if(sortedData): 
+        	global lastUpdatedDateNoCo
+        	firstRow = sortedData[0]
+        	lastUpdatedDateNoCo = firstRow[7]
+        	#print(lastUpdatedDate)
     
     def setLastUpdatedDate(self, newDate):
     	'''
@@ -70,28 +83,40 @@ class Youtube():
         '''
         global lastUpdatedDate
         lastUpdatedDate = newDate
-        
-    def getLastUpdatedDate(self):
+
+    def setLastUpdatedDateNoCo(self, newDate):
     	'''
-        Objective: return last updated comment/reply date-time
+        Objective: set last updated comment/reply date-time
+        Input Parameter: newDate - new date-time
         '''
-        global lastUpdatedDate
-        return lastUpdatedDate
-        
-    def isAddedInCSV(self, row):
-    	'''
-        Objective: Check if comment/reply row is already added in csv file
-        Input Parameter: row - contains comment/reply with related information
-        Return: False if date in row is greater than last updated date-time
-        		otherwise, True 
-        '''
-        global lastUpdatedDate
-        newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
-        newDate2 = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
-        if newDate1 < newDate2:
+        global lastUpdatedDateNoCo
+        lastUpdatedDateNoCo = newDate
+    
+    def checkDate(self, oldDate, newDate):
+    	if oldDate < newDate:
             return False
         else:
             return True
+
+    def isAddedInCSV(self, row, flag):
+    	'''
+        Objective: Check if comment/reply row is already added in csv file
+        Input Parameter: row - contains comment/reply with related information
+        				 flag - 0 for csv file without country, 1 for with country
+        Return: False if date in row is greater than last updated date-time
+        		otherwise, True 
+        '''
+        if flag == 0:
+        	global lastUpdatedDate
+        	oldDate = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
+        	newDate = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
+        	return self.checkDate(oldDate, newDate)
+
+        if flag == 1:
+        	global lastUpdatedDateNoCo
+        	oldDate = datetime.strptime(lastUpdatedDateNoCo, "%Y-%m-%d %H:%M:%S")
+        	newDate = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
+        	return self.checkDate(oldDate, newDate)
 
     def getVideoData(self, videoId):
     	'''
@@ -234,7 +259,7 @@ class Youtube():
             #added date time check logic
             #print(self.isAddedInCSV(row))
             #print('\n')
-            if(self.isAddedInCSV(row)): 
+            if(self.isAddedInCSV(row, 0)): 
                 return None
             else:
                 try: 
@@ -249,16 +274,21 @@ class Youtube():
                 except IOError:
                     return None
         else:
-            #to be added date time check logic     
-            try:
-                fd2 =  open("output.csv", "a", newline='')
-                try:
-                    writer2 = csv.writer(fd2, delimiter=',')
-                    writer2.writerows([row])
-                finally:
-                    fd2.close()
-            except IOError:
+            #to be added date time check logic 
+            if(self.isAddedInCSV(row, 1)): 
                 return None
+            else:    
+            	try:
+                	fd2 =  open("output.csv", "a", newline='')
+                	try:
+                    	writer2 = csv.writer(fd2, delimiter=',')
+                    	writer2.writerows([row])
+                    	#update the variable with date of newly added row
+                        self.setLastUpdatedDate(row[7])
+                	finally:
+                    	fd2.close()
+            	except IOError:
+                	return None
 
 def main():
     # creating object of Youtube Class
@@ -266,7 +296,7 @@ def main():
     videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]
     #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
     #writer2.writerows([row])
-    yObject.initLastUpdatedDate("review.csv")
+    yObject.initLastUpdatedDate("review.csv", "output.csv")
     
     comments = yObject.getComments(videoIds)
     for comment in comments:

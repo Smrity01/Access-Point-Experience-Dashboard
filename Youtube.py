@@ -12,7 +12,8 @@ from datetime import datetime
 #from importlib import reload
 #sys.setdefaultencoding('utf8') 
 
-lastUpdatedDate = ""
+lastUpdatedDate = "2013-01-26 18:10:11"
+lastUpdatedDateNoCo = "2014-05-28 21:23:07"
 
 class Youtube():
     
@@ -47,24 +48,36 @@ class Youtube():
         Input Parameter : FileName - file to be sorted
         Return          : Sorted data
         '''
-        fd1 = open(fileName, "r")
-        data = csv.reader(fd1, delimiter=',')
-        sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S"),reverse=True)
-        #print(sortedData)
-        fd1.close()
-        return sortedData
+        try:
+        	fd1 = open(fileName, "r")
+        	data = csv.reader(fd1, delimiter=',')
+        	sortedData = sorted(data, key = lambda row: datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S"),reverse=True)
+        	#print(sortedData)
+        	fd1.close()
+        	return sortedData
+        except IOError:
+            return None
     
-    def initLastUpdatedDate(self, fileName):
+    def initLastUpdatedDate(self, fileName, fileNameNoCo):
         '''
         Objective       : Initialize date-time with most recent date-time in file
-        Input Parameter : FileName - csv file
+        Input Parameter : fileName - csv file with location
+        				  fileNameNoCo - csv file without location
         Return          : -
         '''
-        global lastUpdatedDate
         sortedData = self.sortCSV(fileName)
-        firstRow = sortedData[0]
-        lastUpdatedDate = firstRow[7]
-        #print(lastUpdatedDate)
+        if(sortedData): 
+        	global lastUpdatedDate
+        	firstRow = sortedData[0]
+        	lastUpdatedDate = firstRow[7]
+        	#print(lastUpdatedDate)
+
+        sortedData = self.sortCSV(fileNameNoCo)
+        if(sortedData): 
+        	global lastUpdatedDateNoCo
+        	firstRow = sortedData[0]
+        	lastUpdatedDateNoCo = firstRow[7]
+        	#print(lastUpdatedDate)
     
     def setLastUpdatedDate(self, newDate):
         '''
@@ -75,29 +88,39 @@ class Youtube():
         global lastUpdatedDate
         lastUpdatedDate = newDate
         
-    def getLastUpdatedDate(self):
+    def getLastUpdatedDate(self, newDate):
         '''
-        Objective       : Return (Gobal variable) last updated comment/reply date-time
-        Input Parameter : -
+        Objective       : set last updated comment/reply date-time
+        Input Parameter : newDate - new date-time
         Return          : Last updated Date 
         '''
-        global lastUpdatedDate
-        return lastUpdatedDate
-        
-    def isAddedInCSV(self, row):
+        global lastUpdatedDateNoCo
+        lastUpdatedDateNoCo = newDate
+    
+    def checkDate(self, oldDate, newDate):
+        if oldDate < newDate:
+            return False
+        else:
+            return True  
+    def isAddedInCSV(self, row, flag):
         '''
         Objective       : Check if comment/reply row is already added in csv file
         Input Parameter : Row - contains comment/reply with related information
+                          flag - 0 for csv file without country, 1 for with country
         Return          : False if date in row is greater than last updated date-time
         		            otherwise, True 
         '''
-        global lastUpdatedDate
-        newDate1 = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
-        newDate2 = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
-        if newDate1 < newDate2:
-            return False
-        else:
-            return True
+        if flag == 0:
+        	global lastUpdatedDate
+        	oldDate = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
+        	newDate = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
+        	return self.checkDate(oldDate, newDate)
+
+        if flag == 1:
+        	global lastUpdatedDateNoCo
+        	oldDate = datetime.strptime(lastUpdatedDateNoCo, "%Y-%m-%d %H:%M:%S")
+        	newDate = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
+        	return self.checkDate(oldDate, newDate)
 
     def getVideoData(self, videoId):
         '''
@@ -128,7 +151,7 @@ class Youtube():
                 try:
                     results = self.youtube.commentThreads().list(part = "snippet", maxResults = 100, videoId = videoId, textFormat = "plainText", pageToken = nextPageToken).execute()
                     totalResults = int(results["pageInfo"]["totalResults"])
-                except HttpError as e:
+                except HttpError:
                     halt = True
             if halt == False:
                 count += totalResults
@@ -235,14 +258,14 @@ class Youtube():
     def writeToCSV(self, row):
         '''
         Objective       : Write data in csv file after checking if it is not already added
-		Input Parameter : row - list containing data to be inserted
+        Input Parameter : row - list containing data to be inserted
         Return          : -
         '''
         if(row[1] != " "):
             #added date time check logic
             #print(self.isAddedInCSV(row))
             #print('\n')
-            if(self.isAddedInCSV(row)): 
+            if(self.isAddedInCSV(row, 0)): 
                 return None
             else:
                 try: 
@@ -257,17 +280,21 @@ class Youtube():
                 except IOError:
                     return None
         else:
-            #to be added date time check logic     
-            try:
-                fd2 =  open("output.csv", "a", newline='')
-                try:
-                    writer2 = csv.writer(fd2, delimiter=',')
-                    writer2.writerows([row])
-                finally:
-                    fd2.close()
-            except IOError:
+            #to be added date time check logic 
+            if(self.isAddedInCSV(row, 1)): 
                 return None
-
+            else:
+                try:
+                    fd2 = open("output.csv", "a", newline='')
+                    try:
+                        writer2 = csv.writer(fd2, delimiter=',')
+                        writer2.writerows([row])
+                        #update the variable with date of newly added row
+                        self.setLastUpdatedDate(row[7])
+                    finally:
+                        fd2.close()
+                except IOError:
+                    return None
 def main():
     '''
     Objective       : Main function / Driver Function
@@ -279,7 +306,7 @@ def main():
     videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]
     #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
     #writer2.writerows([row])
-    yObject.initLastUpdatedDate("review.csv")
+    yObject.initLastUpdatedDate("review.csv", "output.csv")
     
     comments = yObject.getComments(videoIds)
     for comment in comments:

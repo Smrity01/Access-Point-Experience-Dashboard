@@ -27,7 +27,8 @@ class Youtube():
         youtubeApiServiceName = "youtube"
         youtubeApiVersion = "v3"
         pafy.set_api_key("AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs")
-        self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
+        try:
+            self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
 
     def getFormatDateTime(self, dateTime):
         '''

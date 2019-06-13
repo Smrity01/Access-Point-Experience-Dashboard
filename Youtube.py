@@ -233,27 +233,27 @@ class Youtube():
             text = reviewData["snippet"]["textDisplay"]
             publishedAt = reviewData['snippet']['publishedAt']
             updatedAt = reviewData['snippet']['updatedAt']        
+        
+        row = []
+        polarity = self.getSentimentScores(text.encode('unicode-escape').decode('utf-8'))
+        row.append(text.encode('unicode-escape').decode('utf-8'))
+            
         i = self.youtube.channels().list(part = 'snippet',forUsername=author).execute()
         if len(i['items']) > 0:
-            row = []
-            polarity = self.getSentimentScores(text.encode('unicode-escape').decode('utf-8'))
-            row.append(text.encode('unicode-escape').decode('utf-8'))
+            row.append(i['items'][0]['snippet']['country'])
+        else:
+            row.append(" ")
             
-            if('country' in i['items'][0]['snippet']):
-                row.append(i['items'][0]['snippet']['country'])
-            else:
-                row.append(" ")
-            
-            row.append(author.encode('unicode-escape').decode('utf-8'))
-            row.append(polarity['compound'])
-            row.append(polarity['neg']*100)
-            row.append(polarity['neu']*100)
-            row.append(polarity['pos']*100)
-            #PUBLISHED DATE & TIME
-            row.append(self.getFormatDateTime(publishedAt))   
-            #UPDATED DATE & TIME
-            row.append(self.getFormatDateTime(updatedAt))   
-            self.writeToCSV(row)
+        row.append(author.encode('unicode-escape').decode('utf-8'))
+        row.append(polarity['compound'])
+        row.append(polarity['neg']*100)
+        row.append(polarity['neu']*100)
+        row.append(polarity['pos']*100)
+        #PUBLISHED DATE & TIME
+        row.append(self.getFormatDateTime(publishedAt))   
+        #UPDATED DATE & TIME
+        row.append(self.getFormatDateTime(updatedAt))   
+        self.writeToCSV(row)
 
     def writeToCSV(self, row):
         '''
@@ -273,8 +273,6 @@ class Youtube():
                     try:
                         writer1 = csv.writer(fd1, delimiter=',')
                         writer1.writerows([row])
-                        #update the variable with date of newly added row
-                        self.setLastUpdatedDate(row[7])
                     finally:
                         fd1.close()
                 except IOError:
@@ -289,8 +287,6 @@ class Youtube():
                     try:
                         writer2 = csv.writer(fd2, delimiter=',')
                         writer2.writerows([row])
-                        #update the variable with date of newly added row
-                        self.setLastUpdatedDate(row[7])
                     finally:
                         fd2.close()
                 except IOError:

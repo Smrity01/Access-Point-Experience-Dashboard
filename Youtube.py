@@ -27,12 +27,15 @@ class Youtube():
         youtubeApiServiceName = "youtube"
         youtubeApiVersion = "v3"
         pafy.set_api_key("AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs")
-        self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
-
+        try:
+            self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
+        except Exception as error:
+            print(error)
+            
     def getFormatDateTime(self, dateTime):
         '''
         Objective       : Convert dateTime in format %YYYY-%MM-%DD %hh:%mm:%ss
-        Input Parameter : DateTime - original dateTime in comment/reply data
+        Input Parameter : dateTime - original dateTime in comment/reply data
         Return          : Formatted date-time
         '''
         dateTimeList = dateTime.split('T')
@@ -45,7 +48,7 @@ class Youtube():
         '''
         Objective       : Sort CSV file data in reverse order on date-time column 
                             date time format is %Y-%m-%d %H:%M:%S
-        Input Parameter : FileName - file to be sorted
+        Input Parameter : fileName - file to be sorted
         Return          : Sorted data
         '''
         try:
@@ -55,7 +58,8 @@ class Youtube():
         	#print(sortedData)
         	fd1.close()
         	return sortedData
-        except IOError:
+        except Exception as error:
+            print(error)
             return None
     
     def initLastUpdatedDate(self, fileName, fileNameNoCo):
@@ -151,7 +155,8 @@ class Youtube():
                 try:
                     results = self.youtube.commentThreads().list(part = "snippet", maxResults = 100, videoId = videoId, textFormat = "plainText", pageToken = nextPageToken).execute()
                     totalResults = int(results["pageInfo"]["totalResults"])
-                except HttpError:
+                except Exception as error:
+                    print(error)
                     halt = True
             if halt == False:
                 count += totalResults
@@ -171,7 +176,8 @@ class Youtube():
                 first = False
                 try:
                     nextPageToken = results["nextPageToken"]
-                except KeyError as e:
+                except Exception as error:
+                    print(error)
                     further = False
         return comments
 
@@ -189,7 +195,8 @@ class Youtube():
                 comment = self.getVideoData(videoId)
                 comments.extend(comment)
             return comments
-        except IndexError:
+        except Exception as error:
+            print(error)
             return None
 
     def getSentimentScores(self , sentence):
@@ -198,9 +205,12 @@ class Youtube():
         Input Parameter : sentence - text on video (comment/reply)
         Return          : Polarity scores
         '''
-        sidObj = SentimentIntensityAnalyzer()
-        sentimentDictionary = sidObj.polarity_scores(sentence)
-        return sentimentDictionary
+        try:
+            sidObj = SentimentIntensityAnalyzer()
+            sentimentDictionary = sidObj.polarity_scores(sentence)
+            return sentimentDictionary
+        except Exception as error:
+            print(error)
 
     def getReplies(self, parentId):
         '''
@@ -208,8 +218,12 @@ class Youtube():
         Input Parameter : parentID - Id for comment
         Return          : Fetched replies in any
         '''
-        response = self.youtube.comments().list(part = 'snippet', parentId = parentId, textFormat="plainText").execute()
-        return  response
+        try:
+            response = self.youtube.comments().list(part = 'snippet', parentId = parentId, textFormat="plainText").execute()
+            return  response
+        except Exception as error:
+            print(error)
+        
 
     def writeRow(self, reviewData, flag):
         '''
@@ -229,16 +243,21 @@ class Youtube():
             updatedAt = reviewData[4]
         if flag == 1:
             #for reply
-            author = reviewData["snippet"]["authorDisplayName"]
-            text = reviewData["snippet"]["textDisplay"]
-            publishedAt = reviewData['snippet']['publishedAt']
-            updatedAt = reviewData['snippet']['updatedAt']        
-        
+            try:
+                author = reviewData["snippet"]["authorDisplayName"]
+                text = reviewData["snippet"]["textDisplay"]
+                publishedAt = reviewData['snippet']['publishedAt']
+                updatedAt = reviewData['snippet']['updatedAt']
+            except Exception as error:
+                print
         row = []
         polarity = self.getSentimentScores(text.encode('unicode-escape').decode('utf-8'))
         row.append(text.encode('unicode-escape').decode('utf-8'))
             
-        i = self.youtube.channels().list(part = 'snippet',forUsername=author).execute()
+        try:
+            i = self.youtube.channels().list(part = 'snippet',forUsername=author).execute()
+        except Exception as error:
+            print(error)
         if len(i['items']) > 0:
             row.append(i['items'][0]['snippet']['country'])
         else:
@@ -275,7 +294,8 @@ class Youtube():
                         writer1.writerows([row])
                     finally:
                         fd1.close()
-                except IOError:
+                except Exception as error:
+                    print(error)
                     return None
         else:
             #to be added date time check logic 
@@ -289,8 +309,10 @@ class Youtube():
                         writer2.writerows([row])
                     finally:
                         fd2.close()
-                except IOError:
-                    return None
+                except Exception as error:
+                    print(error)
+                    raise
+                    #return None
 def main():
     '''
     Objective       : Main function / Driver Function
@@ -303,15 +325,19 @@ def main():
     #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
     #writer2.writerows([row])
     yObject.initLastUpdatedDate("review.csv", "output.csv")
+    try:
+        comments = yObject.getComments(videoIds)
+        
+        for comment in comments:
+            yObject.writeRow(comment, 0)
+            replies = yObject.getReplies(comment[2])
+            for reply in replies["items"]:
+                #print(reply)
+                yObject.writeRow(reply, 1)
+    except TypeError as error:
+        print(error)
+        raise
     
-    comments = yObject.getComments(videoIds)
-    for comment in comments:
-        yObject.writeRow(comment, 0)
-        replies = yObject.getReplies(comment[2])
-        for reply in replies["items"]:
-            #print(reply)
-            yObject.writeRow(reply, 1)
-
 if __name__ == "__main__":
     # calling main function
     main()

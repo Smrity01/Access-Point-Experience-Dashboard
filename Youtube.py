@@ -75,13 +75,14 @@ class Youtube():
         #File which store time of latest fetched and stored tweet
         DateTimeFileDescriptor = TextHandling(DateTimeFileName)
         global lastUpdatedDate
-        LastUpdatedDate = DateTimeFileDescriptor.read()
-
+        lastUpdatedDate = DateTimeFileDescriptor.read()
+        print("\nLast UpdatedDate: ",lastUpdatedDate)
         DateTimeFileName = "youtubeDateTimeNoCo.txt"
         #File which store time of latest fetched and stored tweet
         DateTimeFileDescriptor = TextHandling(DateTimeFileName)
         global lastUpdatedDateNoCo
-        LastUpdatedDateNoCo = DateTimeFileDescriptor.read()
+        lastUpdatedDateNoCo = DateTimeFileDescriptor.read()
+        print('\n last updated no co', lastUpdatedDateNoCo)
         
     def setLastUpdatedDate(self):
         '''
@@ -91,8 +92,8 @@ class Youtube():
         Return          : -
         '''
         sortedData = self.sortCSV("output.csv")
-        firstRow = sortedData[0]
-        if(sortedData): 
+        if(sortedData):
+            firstRow = sortedData[0]
             DateTimeFileName = "youtubeDateTime.txt"
             #File which store time of latest fetched and stored tweet
             DateTimeFileDescriptor = TextHandling(DateTimeFileName)
@@ -100,8 +101,8 @@ class Youtube():
             #print(lastUpdatedDateNoCo)
 
         sortedData = self.sortCSV("review.csv")
-        firstRow = sortedData[0]
         if(sortedData): 
+            firstRow = sortedData[0]
             DateTimeFileName = "youtubeDateTimeNoCo.txt"
             #File which store time of latest fetched and stored tweet
             DateTimeFileDescriptor = TextHandling(DateTimeFileName)
@@ -124,7 +125,7 @@ class Youtube():
         '''
         Objective       : Check if comment/reply row is already added in csv file
         Input Parameter : Row - contains comment/reply with related information
-                          flag - 0 for csv file without country, 1 for with country
+                          flag - 0 for csv file with country, 1 for no country
         Return          : False if date in row is greater than last updated date-time
                             otherwise, True 
         '''
@@ -132,12 +133,14 @@ class Youtube():
             global lastUpdatedDate
             oldDate = datetime.strptime(lastUpdatedDate, "%Y-%m-%d %H:%M:%S")
             newDate = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
+            #print("\nCheckDate: ",self.checkDate(oldDate, newDate))
             return self.checkDate(oldDate, newDate)
 
         if flag == 1:
             global lastUpdatedDateNoCo
             oldDate = datetime.strptime(lastUpdatedDateNoCo, "%Y-%m-%d %H:%M:%S")
             newDate = datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S")
+            #print("\nCheckDate: ",self.checkDate(oldDate, newDate))
             return self.checkDate(oldDate, newDate)
 
     def getVideoData(self, videoId):
@@ -275,6 +278,9 @@ class Youtube():
                     row.append(i['items'][0]['snippet']['country'])
                 else:
                     row.append(" ")
+            else:
+                row.append(" ")
+
         except Exception as error:
             print(error)
             
@@ -284,7 +290,8 @@ class Youtube():
         row.append(polarity['neu']*100)
         row.append(polarity['pos']*100)
         #PUBLISHED DATE & TIME
-        row.append(self.getFormatDateTime(publishedAt))   
+        row.append(self.getFormatDateTime(publishedAt))
+        print(type(publishedAt))   
         #UPDATED DATE & TIME
         row.append(self.getFormatDateTime(updatedAt))   
         self.writeToCSV(row)
@@ -295,15 +302,15 @@ class Youtube():
         Input Parameter : row - list containing data to be inserted
         Return          : -
         '''
-        if(row[1] != " "):
+        if(row[1] == " "):
             #added date time check logic
             #print(self.isAddedInCSV(row))
             #print('\n')
-            if(self.isAddedInCSV(row, 0)): 
+            if(self.isAddedInCSV(row, 1)): 
                 return None
             else:
                 try: 
-                    fd1 = open("review.csv", "a", newline='')
+                    fd1 = open("output.csv", "a", newline='')
                     try:
                         writer1 = csv.writer(fd1, delimiter=',')
                         writer1.writerows([row])
@@ -314,11 +321,11 @@ class Youtube():
                     return None
         else:
             #to be added date time check logic 
-            if(self.isAddedInCSV(row, 1)): 
+            if(self.isAddedInCSV(row, 0)): 
                 return None
             else:
                 try:
-                    fd2 = open("output.csv", "a", newline='')
+                    fd2 = open("review.csv", "a", newline='')
                     try:
                         writer2 = csv.writer(fd2, delimiter=',')
                         writer2.writerows([row])
@@ -352,6 +359,7 @@ def main():
     except TypeError as error:
         print(error)
         raise
+    yObject.setLastUpdatedDate()
     
 if __name__ == "__main__":
     # calling main function

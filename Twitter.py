@@ -81,15 +81,18 @@ class Twitter():
         Output parameter:-
                 return date of latest stored tweet
         '''
+        date = datetime.strptime(date,"%Y-%m-%d %H:%M:%S")
         newDate = date
         for tweet in data:
-            strTime = tweet['time'].strftime("%y-%m-%d %H:%M:%S")
+            #print("in write row: ", tweet[])
+            strTime = tweet['time']
+            #strTime = tweet['time'].strftime("%y-%m-%d %H:%M:%S")
             if strTime > date :
                 polarity = sentiment_scores(tweet['text'])
-                self.TweetsFile.write_row([tweet['text'],tweet['location'],strTime,' ',polarity['compound'],polarity['neg']*100,polarity['neu']*100,polarity['pos']*100] )
+                self.TweetsFile.write_row([tweet['text'],tweet['location'],datetime.strftime(strTime,"%Y-%m-%d %H:%M:%S"),' ',polarity['compound'],polarity['neg']*100,polarity['neu']*100,polarity['pos']*100] )
                 if newDate < strTime :
                     newDate = strTime
-        return newDate
+        return datetime.strftime(newDate,"%Y-%m-%d %H:%M:%S")
 
 def main():
     '''
@@ -105,11 +108,11 @@ def main():
     DateTimeFileName = "twitter_date_time.txt"#File which store time of latest fetched and stored tweet
     DateTimeFileDiscriptor = TextHandling(DateTimeFileName)
     LastUpdatedDate = DateTimeFileDiscriptor.read()
-    
     tweets = twitterObject.getTweets(query = searchItem)
+    '''
     for i in tweets:
         print (i['text'],'\n',i['time'],'\n',i['location'],"\n\n")
-        
+    '''
     NewDate = twitterObject.write_data(tweets , LastUpdatedDate)
     DateTimeFileDiscriptor.write(NewDate)
     

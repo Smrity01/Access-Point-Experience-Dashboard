@@ -291,7 +291,7 @@ class Youtube():
         row.append(polarity['pos']*100)
         #PUBLISHED DATE & TIME
         row.append(self.getFormatDateTime(publishedAt))
-        print(type(publishedAt))   
+        #print(type(publishedAt))   
         #UPDATED DATE & TIME
         row.append(self.getFormatDateTime(updatedAt))   
         self.writeToCSV(row)

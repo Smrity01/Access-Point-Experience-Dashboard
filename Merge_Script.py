@@ -5,8 +5,12 @@ from datetime import datetime
 from FileHandling import TextHandling
 
 def merging() :
+    '''
+        Objective       : To merge the data from two resources youtube and twitter
+        Input Parameter : -
+        Return          : -
+    '''
     countries = [ 'US' , 'UK','GB' ,'MX' ,'SE' ,'DK','DE']
-
     DateTimeFileName = "merge_date_time.txt"#File which store time of latest fetched and stored tweet
     DateTimeFileDiscriptor = TextHandling(DateTimeFileName)
     LastUpdatedDate = DateTimeFileDiscriptor.read()
@@ -19,18 +23,12 @@ def merging() :
     tweets['Location'] = tweets['Location'].replace(numpy.nan, random.choice(countries))
     twitterNewUpdatedDate = tweets['PublishedDate'].max()
     tweets = tweets[tweets['PublishedDate'] > twitterLastUpdatedDate]
-    #print(tweets1)
-    #print(tweets['PublishedDate'])
     #Youtube_Review original
     youtubeLastUpdatedDate = LastUpdatedDate[1]
     youtubeReview = pandas.read_csv('review.csv') 
     youtubeReview = youtubeReview[['Comment','Location','UserId','Compound','Negative','Neutral','Positive','PublishedDate']]
     youtubeNewUpdatedDate = youtubeReview['PublishedDate'].max()
     youtubeReview = youtubeReview[youtubeReview['PublishedDate'] > youtubeLastUpdatedDate]
-    #print(youtubeReview)
-    #youtubeReview = youtubeReview[youtubeReview['PublishedDate'] > youtubeLastUpdatedDate]
-
-
     #Youtube_manipulated data
     youtubeLastUpdatedDate2 = LastUpdatedDate[2]
     youtubeManipulated = pandas.read_csv('output.csv') 

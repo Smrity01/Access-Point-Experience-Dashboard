@@ -13,24 +13,6 @@ get_ipython().system('pip install "vaderSentiment"')
 
 get_ipython().system('pip install "tweepy"')
 
-
-# In[3]:
-
-
-'''
-- Changes :
--At line - 66
-  Replaced searchItem variable with a list.
-
-  Problems to deal with:
--------------------------------
-
-- At line - 72
-    Its possible that the location is a city in USA but this code will only consider the location string containing 'USA'
-        which is not correct.
-'''
-
-
 import tweepy
 import re
 from FileHandling import CSVHandling

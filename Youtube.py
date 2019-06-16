@@ -268,7 +268,8 @@ class Youtube():
             except Exception as error:
                 print
         row = []
-        polarity = self.getSentimentScores(text.encode('unicode-escape').decode('utf-8'))
+        polarity = self.getSentimentScores(text)
+        print(polarity)
         row.append(text.encode('unicode-escape').decode('utf-8'))
             
         try:

@@ -24,10 +24,10 @@ class Youtube():
         Input Parameter : -
         Return          : -
         '''
-        developerKey = "AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs"
+        developerKey = "Your Developer Key"
         youtubeApiServiceName = "youtube"
         youtubeApiVersion = "v3"
-        pafy.set_api_key("AIzaSyC7YZD2osLIZ4GXFEMnoOdvQ6Hkr6mUcUs")
+        pafy.set_api_key(developerKey)
         try:
             self.youtube = build(youtubeApiServiceName, youtubeApiVersion, developerKey = developerKey)
         except Exception as error:

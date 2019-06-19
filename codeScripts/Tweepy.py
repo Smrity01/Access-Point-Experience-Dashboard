@@ -30,8 +30,8 @@ class Twitter():
         Class constructor or initialization method.
         '''
         # keys and tokens from the Twitter Dev Console o get tweets from twitter
-        consumerKey    = '8WjP9Q9vu94yEhFMs2YIgVZp5'
-        consumerSecret = 'scv2Ic3jhnFQMKJuI6NoyGfaxmSteSQMySSOxmAgSc8K1ufTOU'
+        consumerKey    = 'Your consumerKey'
+        consumerSecret = 'Your consumerSecretKey'
         '''
         These Tokens are for activities such as tweet, like, retweet, etc.
         access_token = '3548080632-xT2YIjmeVxrlnnJJmt9z5uBMADYPlfBU2Bxieks'

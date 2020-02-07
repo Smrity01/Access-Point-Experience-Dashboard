@@ -345,8 +345,6 @@ def main():
     # creating object of Youtube Class
     yObject = Youtube()
     videoIds = ["GXGN4f6ma4k" , "RBXEIo37Q1w" , "P3fuh03n0mE" , "Jn0kFSXo9gY" , "_ybn9sC8xE0"]
-    #row = ["Comment","Location","UserId","Compound","Negative","neutral","positive"]
-    #writer2.writerows([row])
     yObject.getLastUpdatedDate()
     try:
         comments = yObject.getComments(videoIds)
